@@ -27,6 +27,8 @@ import ProgressSpinner from 'primevue/progressspinner';
 import SelectButton from 'primevue/selectbutton';
 import Divider from 'primevue/divider';
 import Textarea from 'primevue/textarea';
+// import Breadcrumb from 'primevue/breadcrumb';
+// import Panel from 'primevue/panel';
 
 import 'primeicons/primeicons.css'
 
@@ -70,6 +72,9 @@ app.component('ProgressSpinner', ProgressSpinner)
 app.component('SelectButton', SelectButton)
 app.component('Divider', Divider)
 app.component('Textarea', Textarea)
+// app.component('Breadcrumb', Breadcrumb)
+// app.component('Panel', Panel)
+
 
 // Tooltip Directive
 app.directive('tooltip', Tooltip)

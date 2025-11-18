@@ -261,6 +261,7 @@ import { useLocationsStore } from '@/stores/locations'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import AlertCard from '@/components/alerts/AlertCard.vue'
+import Paginator from 'primevue/paginator';
 
 import Sidebar from '@/partials/Sidebar.vue'
 import Header from '@/partials/Header.vue'

@@ -29,6 +29,11 @@ const router = createRouter({
       component: SampleForm,
     },
     {
+      path: "/samples/:id/edit",
+      name: "EditSample",
+      component: SampleForm,
+    },
+    {
       path: "/samples/:id",
       name: "SampleDetails",
       component: SampleDetails,

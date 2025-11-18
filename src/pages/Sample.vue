@@ -245,14 +245,6 @@
                   </div>
                   <div class="flex gap-2">
                     <Button
-                      label="Export Selected"
-                      icon="pi pi-download"
-                      outlined
-                      size="small"
-                      :disabled="!selectedSamples.length"
-                      @click="exportSelected"
-                    />
-                    <Button
                       label="Delete Selected"
                       icon="pi pi-trash"
                       severity="danger"

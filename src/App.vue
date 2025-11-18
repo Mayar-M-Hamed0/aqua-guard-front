@@ -12,6 +12,7 @@ authStore.user = { name: 'Test User', role: 'admin',"permissions": [
 
 </script>
 <template>
+  <Toast position="top-right" />
   <router-view />
 </template>
 

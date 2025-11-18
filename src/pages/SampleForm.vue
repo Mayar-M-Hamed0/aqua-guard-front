@@ -70,6 +70,46 @@
                   <InputText v-model="form.lab_name" placeholder="Enter lab name" />
                 </div>
               </div>
+
+              <!-- Image Upload Section -->
+              <div class="mt-6 border-t pt-6">
+                <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">
+                  <i class="pi pi-camera mr-2"></i>Sample Image
+                </label>
+                
+                <div class="flex items-start gap-4">
+                  <!-- Image Preview -->
+                  <div v-if="imagePreview" class="relative">
+                    <img 
+                      :src="imagePreview" 
+                      alt="Sample preview" 
+                      class="w-32 h-32 object-cover rounded-lg border-2 border-gray-300 dark:border-gray-600"
+                    />
+                    <Button 
+                      icon="pi pi-times" 
+                      class="p-button-rounded p-button-danger p-button-sm absolute -top-2 -right-2"
+                      @click="removeImage"
+                      type="button"
+                    />
+                  </div>
+
+                  <!-- Upload Button -->
+                  <div class="flex-1">
+                    <FileUpload
+                      mode="basic"
+                      accept="image/*"
+                      :maxFileSize="5000000"
+                      @select="onImageSelect"
+                      :auto="false"
+                      chooseLabel="Choose Image"
+                      class="p-button-outlined"
+                    />
+                    <small class="text-xs text-gray-500 dark:text-gray-400 block mt-2">
+                      Maximum file size: 5MB. Supported formats: JPEG, PNG, JPG
+                    </small>
+                  </div>
+                </div>
+              </div>
             </Panel>
 
             <!-- Physical Parameters -->
@@ -326,7 +366,7 @@
                   :loading="saving"
                 />
                 <Button 
-                  label="Submit & Analyze" 
+                  :label="editMode ? 'Update Sample' : 'Submit & Analyze'" 
                   icon="pi pi-check" 
                   type="submit"
                   :loading="saving"
@@ -363,6 +403,9 @@ const sidebarOpen = ref(false)
 const editMode = ref(false)
 const saving = ref(false)
 const errors = ref({})
+const selectedImage = ref(null)
+const imagePreview = ref(null)
+const shouldDeleteImage = ref(false) // NEW: Track if image should be deleted
 
 const form = ref({
   location_id: null,
@@ -423,12 +466,6 @@ onMounted(async () => {
     return
   }
   
-  // Check permission
-  if (!authStore.hasPermission('create_samples')) {
-    router.push('/unauthorized')
-    return
-  }
-  
   locationsStore.fetchLocations()
   
   if (route.query.location_id) {
@@ -444,10 +481,52 @@ onMounted(async () => {
 const loadSample = async (id) => {
   try {
     const response = await samplesService.getById(id)
-    Object.assign(form.value, response.data)
+    
+    // Load all form data
+    Object.keys(form.value).forEach(key => {
+      if (response.data[key] !== undefined) {
+        // Handle dates properly
+        if (key === 'collection_date' && response.data[key]) {
+          form.value[key] = new Date(response.data[key])
+        } else if (key === 'collection_time' && response.data[key]) {
+          // Parse time string to Date object
+          const [hours, minutes] = response.data[key].split(':')
+          const timeDate = new Date()
+          timeDate.setHours(parseInt(hours), parseInt(minutes), 0)
+          form.value[key] = timeDate
+        } else {
+          form.value[key] = response.data[key]
+        }
+      }
+    })
+    
+    // Load image if exists
+    if (response.data.sample_image_url) {
+      imagePreview.value = response.data.sample_image_url
+    }
   } catch (error) {
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load sample', life: 3000 })
+    console.error('Load sample error:', error)
   }
+}
+
+const onImageSelect = (event) => {
+  const file = event.files[0]
+  if (file) {
+    selectedImage.value = file
+    shouldDeleteImage.value = false // Reset delete flag when new image is selected
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const removeImage = () => {
+  selectedImage.value = null
+  imagePreview.value = null
+  shouldDeleteImage.value = true // Mark image for deletion in edit mode
 }
 
 const validateForm = () => {
@@ -479,16 +558,45 @@ const submitForm = async () => {
   
   saving.value = true
   try {
+    // Create FormData for file upload
+    const formData = new FormData()
+    
+    // Append all form fields
+    Object.keys(form.value).forEach(key => {
+      if (form.value[key] !== null && form.value[key] !== '') {
+        if (key === 'collection_date' && form.value[key] instanceof Date) {
+          formData.append(key, form.value[key].toISOString().split('T')[0])
+        } else if (key === 'collection_time' && form.value[key] instanceof Date) {
+          formData.append(key, form.value[key].toTimeString().slice(0, 5))
+        } else {
+          formData.append(key, form.value[key])
+        }
+      }
+    })
+    
+    // Handle image upload/deletion
+    if (selectedImage.value) {
+      // New image selected
+      formData.append('sample_image', selectedImage.value)
+    } else if (shouldDeleteImage.value && editMode.value) {
+      // Image was removed in edit mode
+      formData.append('delete_image', 'true')
+    }
+    
     if (editMode.value) {
-      await samplesService.update(route.params.id, form.value)
+      await samplesService.update(route.params.id, formData)
       toast.add({ severity: 'success', summary: 'Success', detail: 'Sample updated successfully', life: 3000 })
+      // Reload the sample to get updated data including new image URL
+      await loadSample(route.params.id)
     } else {
-      const response = await samplesService.create(form.value)
+      const response = await samplesService.create(formData)
       toast.add({ severity: 'success', summary: 'Success', detail: 'Sample created and analyzed', life: 3000 })
       router.push(`/samples/${response.data.id}`)
     }
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: error.message, life: 3000 })
+    console.error('Submit error:', error)
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to save sample'
+    toast.add({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 })
   } finally {
     saving.value = false
   }

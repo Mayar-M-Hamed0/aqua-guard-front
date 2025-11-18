@@ -520,7 +520,7 @@ const sidebarExpanded = ref(
 );
 
 // Mock data - replace with real data from store
-const unreadAlerts = computed(() => 5); // From alerts store
+const unreadAlerts = computed(() => 0 ); // From alerts store
 const userName = computed(() => authStore.user?.name || "Admin User");
 const userRole = computed(() => authStore.user?.role || "Administrator");
 const userInitials = computed(() => {

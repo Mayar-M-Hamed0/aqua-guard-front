@@ -45,7 +45,6 @@
 
                 <div class="flex gap-2">
                   <Button label="Add Sample" icon="pi pi-plus" @click="addSample" />
-                  <Button label="Edit" icon="pi pi-pencil" outlined />
                   <Button label="Generate Report" icon="pi pi-file-pdf" outlined />
                 </div>
               </div>

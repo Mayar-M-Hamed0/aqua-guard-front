@@ -1,17 +1,17 @@
 export const getWQIColor = (wqi) => {
-  if (wqi >= 90) return '#22c55e' // Excellent - Green
-  if (wqi >= 70) return '#3b82f6' // Good - Blue
-  if (wqi >= 50) return '#eab308' // Fair - Yellow
-  if (wqi >= 25) return '#f97316' // Poor - Orange
-  return '#ef4444' // Very Poor - Red
+  if (wqi <= 25) return '#22c55e' // Excellent - Green
+  if (wqi <= 50) return '#3b82f6' // Good - Blue
+  if (wqi <= 75) return '#eab308' // Poor - Yellow
+  if (wqi <= 100) return '#f97316' // Very Poor - Orange
+  return '#ef4444'                // Unsuitable - Red
 }
 
 export const getWQIStatus = (wqi) => {
-  if (wqi >= 90) return 'Excellent'
-  if (wqi >= 70) return 'Good'
-  if (wqi >= 50) return 'Fair'
-  if (wqi >= 25) return 'Poor'
-  return 'Very Poor'
+  if (wqi <= 25) return 'Excellent'
+  if (wqi <= 50) return 'Good'
+  if (wqi <= 75) return 'Poor'
+  if (wqi <= 100) return 'Very Poor'
+  return 'Unsuitable'
 }
 
 export const getRiskLevelColor = (riskLevel) => {

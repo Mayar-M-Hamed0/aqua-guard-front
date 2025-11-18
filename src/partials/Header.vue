@@ -45,9 +45,9 @@
             </button>          
             <SearchModal id="search-modal" searchId="search" :modalOpen="searchModalOpen" @open-modal="searchModalOpen = true" @close-modal="searchModalOpen = false" />
           </div>
-          <Notifications align="right" />
+          <!-- <Notifications align="right" />
           <Help align="right" />
-          <ThemeToggle />
+          <ThemeToggle /> -->
           <!-- Divider -->
           <hr class="w-px h-6 bg-gray-200 dark:bg-gray-700/60 border-none" />
           <UserMenu align="right" />
